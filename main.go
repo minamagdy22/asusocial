@@ -64,7 +64,7 @@ func demo() {
 		
 		xmlrespond, _ := xml.Marshal(appuser)
 		fmt.Println(string(xmlrespond))
-		jsonrespond, _ := xml.Marshal(appuser)
+		jsonrespond, _ := json.Marshal(appuser)
 		fmt.Println(string(jsonrespond))
 		// Verification
 
