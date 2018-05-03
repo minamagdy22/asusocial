@@ -1,10 +1,13 @@
-package main
+package main 
 
 import (
+	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"time"
-	"encoding/xml"
-	"encoding/json"
+	"os"
+	"io/ioutil"
+	"log"
 )
 
 type User struct {
@@ -22,11 +25,33 @@ type Post struct {
 }
 
 func main() {
+
 	demo()
 	//Postdemo()
 }
-func CreateUser(userdata User){
+func CreateUser(userdata User) {
 
+}
+
+func save(){
+	d1 := []byte("hello\ngo\n")
+    err := ioutil.WriteFile("trail.xml", d1, 0644)
+	if(err != nil){
+		log.Println(err)
+	}
+}
+
+func load(){
+	file, err := os.Open("foo.xml") // For read access.
+	if err != nil {
+		log.Fatal(err)
+	}
+	data := make([]byte, 100)
+	count, err := file.Read(data)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("read %d bytes: %q\n", count, data[:count])
 }
 
 // func CreatePost(userdata User, postdata Post){
@@ -34,7 +59,7 @@ func CreateUser(userdata User){
 // 	postdate.CreatedAt = time.Now()
 // }
 
-func CurrentLoggedUser(){
+func CurrentLoggedUser() {
 
 }
 func Postdemo() {
@@ -61,7 +86,7 @@ func demo() {
 		fmt.Scanf("%s", &appuser.Password)
 		fmt.Print("Enter Name:")
 		fmt.Scanf("%s", &appuser.Name)
-		
+
 		xmlrespond, _ := xml.Marshal(appuser)
 		fmt.Println(string(xmlrespond))
 		jsonrespond, _ := json.Marshal(appuser)
