@@ -1,16 +1,20 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/urfave/cli"
 )
+
+var Users []User
 
 func main() {
 	app := cli.NewApp()
@@ -73,12 +77,38 @@ func GoWeb() {
 }
 
 func GoCli() {
+	scanner := bufio.NewScanner(os.Stdin)
+	ClearScreen()
+	Welcome()
 	for true {
-		ClearScreen()
-		Welcome()
 		var command string
 		fmt.Print(">> ")
-		fmt.Scan(&command)
+		scanner.Scan()
+		command = scanner.Text()
+		commands := strings.Split(command, " ")
+
+		if commands[0] == "add" && commands[1] == "user" && len(commands) == 5 {
+			// add user functionality
+			Users = append(Users, User{Info: UserData{
+				ID:         len(Users),
+				FirstName:  commands[2],
+				SecondName: commands[3],
+				Password:   commands[4],
+			}})
+		} else if commands[0] == "get" && commands[1] == "users" && len(commands) == 2 {
+			// get users functionality
+			for i, k := range Users {
+				fmt.Println(i, k)
+			}
+		} else if commands[0] == "add" && commands[1] == "friend" && len(commands) == 3 {
+			// add friend functionaliy
+			Users[0].Friend = Users[1].Info
+		} else if commands[0] == "clear" {
+			ClearScreen()
+		} else {
+			fmt.Println("Invalid")
+		}
+
 	}
 }
 
