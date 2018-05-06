@@ -1,101 +1,68 @@
-package main 
+package main
 
 import (
-	"encoding/json"
-	"encoding/xml"
 	"fmt"
-	"time"
-	"os"
-	"io/ioutil"
 	"log"
+	"os"
+	"os/exec"
+
+	"github.com/urfave/cli"
 )
 
-type User struct {
-	Id       int
-	Name     string
-	Email    string
-	Password string
-}
-
-type Post struct {
-	Id        int
-	Content   string
-	CreatedAt time.Time
-	PostUser  User
-}
-
 func main() {
+	app := cli.NewApp()
 
-	demo()
-	//Postdemo()
-}
-func CreateUser(userdata User) {
-
-}
-
-func save(){
-	d1 := []byte("hello\ngo\n")
-    err := ioutil.WriteFile("trail.xml", d1, 0644)
-	if(err != nil){
-		log.Println(err)
+	app.Flags = []cli.Flag{
+		cli.StringFlag{
+			Name:  "port",
+			Value: "main",
+			Usage: "port to the application",
+		},
 	}
-}
 
-func load(){
-	file, err := os.Open("foo.xml") // For read access.
+	app.Action = func(c *cli.Context) error {
+		switch c.String("port") {
+		case "main":
+			Welcome()
+		case "web":
+			fmt.Println("Hello from the web")
+		case "cli":
+			fmt.Println("Hello from the cli")
+		default:
+			Welcome()
+			fmt.Println("Invalid port")
+
+		}
+		return nil
+	}
+
+	err := app.Run(os.Args)
 	if err != nil {
 		log.Fatal(err)
 	}
-	data := make([]byte, 100)
-	count, err := file.Read(data)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("read %d bytes: %q\n", count, data[:count])
 }
 
-// func CreatePost(userdata User, postdata Post){
-// 	// Putting the current time into the Post
-// 	postdate.CreatedAt = time.Now()
-// }
+// Welcome banner http://patorjk.com/software/taag - font Stop
+func Welcome() {
+	var str string = `
 
-func CurrentLoggedUser() {
+                                                                   /$$           /$$
+                                                                  |__/          | $$
+  /$$$$$$   /$$$$$$$ /$$   /$$        /$$$$$$$  /$$$$$$   /$$$$$$$ /$$  /$$$$$$ | $$
+ |____  $$ /$$_____/| $$  | $$       /$$_____/ /$$__  $$ /$$_____/| $$ |____  $$| $$
+  /$$$$$$$|  $$$$$$ | $$  | $$      |  $$$$$$ | $$  \ $$| $$      | $$  /$$$$$$$| $$
+ /$$__  $$ \____  $$| $$  | $$       \____  $$| $$  | $$| $$      | $$ /$$__  $$| $$
+|  $$$$$$$ /$$$$$$$/|  $$$$$$/       /$$$$$$$/|  $$$$$$/|  $$$$$$$| $$|  $$$$$$$| $$
+ \_______/|_______/  \______/       |_______/  \______/  \_______/|__/ \_______/|__/
+                                                                                
+(c) asu social 2018 - All Rights Reserved
 
+`
+	fmt.Println(str)
 }
-func Postdemo() {
 
-}
-
-func demo() {
-	// Hello world page
-	fmt.Println("Hello world")
-	// Login/Registration
-	fmt.Println("(1) Login", "(2) Register")
-	var inputstr int
-	fmt.Scanf("%d", &inputstr)
-	if inputstr != 1 && inputstr != 2 {
-		fmt.Println("Enter valid input")
-	}
-
-	if inputstr == 1 {
-		// Login page
-		var appuser User
-		fmt.Print("Enter email:")
-		fmt.Scanf("%s", &appuser.Email)
-		fmt.Print("Enter password:")
-		fmt.Scanf("%s", &appuser.Password)
-		fmt.Print("Enter Name:")
-		fmt.Scanf("%s", &appuser.Name)
-
-		xmlrespond, _ := xml.Marshal(appuser)
-		fmt.Println(string(xmlrespond))
-		jsonrespond, _ := json.Marshal(appuser)
-		fmt.Println(string(jsonrespond))
-		// Verification
-
-	}
-	if inputstr == 2 {
-		// Reigstration page
-
-	}
+func ClearScreen() {
+	cmd := exec.Command("clear") //Linux example, its tested
+	cmd.Stdout = os.Stdout
+	cmd.Run()
 }
