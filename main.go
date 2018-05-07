@@ -7,15 +7,34 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"sort"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/urfave/cli"
 )
 
-var Users []User
+var (
+	db          *gorm.DB
+	err         error
+	currentUser User
+)
 
+func init() {
+	// database connection
+	db, err = gorm.Open("sqlite3", "database.db")
+	db.LogMode(true)
+
+	if err != nil {
+		panic("failed to connect database")
+	}
+	// `defer` for setting a time-closing fn.
+	// Migrate the schema
+	db.AutoMigrate(&User{}, &Post{}, &Group{})
+}
 func main() {
 	app := cli.NewApp()
 	app.Name = "asu social"
@@ -87,24 +106,62 @@ func GoCli() {
 		command = scanner.Text()
 		commands := strings.Split(command, " ")
 
-		if commands[0] == "add" && commands[1] == "user" && len(commands) == 5 {
+		if commands[0] == "add" && commands[1] == "user" && len(commands) == 6 {
 			// add user functionality
-			Users = append(Users, User{Info: UserData{
-				ID:         len(Users),
+			u := User{
 				FirstName:  commands[2],
 				SecondName: commands[3],
-				Password:   commands[4],
-			}})
+				Email:      commands[4],
+				Password:   commands[5],
+			}
+			AddNewUser(u)
 		} else if commands[0] == "get" && commands[1] == "users" && len(commands) == 2 {
-			// get users functionality
-			for i, k := range Users {
-				fmt.Println(i, k)
+			//get users functionality
+			users := GetAllUsers()
+			for _, k := range users {
+				fmt.Println(k.ID, k.FirstName, k.SecondName, k.Email, k.Password)
 			}
 		} else if commands[0] == "add" && commands[1] == "friend" && len(commands) == 3 {
 			// add friend functionaliy
-			Users[0].Friend = Users[1].Info
+
+		} else if commands[0] == "login" && len(commands) == 3 {
+			// login functionality
+			if ValidateLogin(commands[1], commands[2]) {
+				fmt.Println("succesfully logged in")
+				u := GetUser(commands[1])
+				Login(u)
+			} else {
+				fmt.Println("wrong password")
+			}
+
+		} else if commands[0] == "logout" {
+			Logout()
+		} else if commands[0] == "save" {
+			// Save functionality , export to xml and json
+			Save()
+		} else if commands[0] == "exit" {
+			// exit functionality
+			os.Exit(3)
 		} else if commands[0] == "clear" {
+			// clearscreen functionality
 			ClearScreen()
+		} else if commands[0] == "ls" {
+			// List function
+			var listCommands = []string{
+				"add user <first name> <second name> <email> <password>",
+				"get users",
+				"save",
+				"exit",
+				"clear",
+				"ls",
+				"login <id> <password>",
+				"whoami",
+				"logout",
+			}
+			sort.Strings(listCommands)
+			for _, val := range listCommands {
+				fmt.Println("$", val)
+			}
 		} else {
 			fmt.Println("Invalid")
 		}
