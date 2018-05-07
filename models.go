@@ -40,4 +40,5 @@ type Group struct {
 	AdminID   int
 	Name      string
 	Posts     []Post
+	Users     []User `gorm:"many2many:user_groups;"`
 }

@@ -145,11 +145,18 @@ func GoCli() {
 			fmt.Println("Name:", g.Name)
 			fmt.Println("Created at:", g.CreatedAt)
 			admin := GetUser(strconv.Itoa(g.AdminID))
-			fmt.Printf("Admin: (%d) %s %s", admin.ID, admin.FirstName, admin.SecondName)
+			fmt.Printf("Admin: (%d): %s %s\n", admin.ID, admin.FirstName, admin.SecondName)
+			users := GetGroupUsers(g)
+			fmt.Printf("Members (%d member):\n", len(users))
+			for _, k := range users {
+				fmt.Printf("\t(%d) - %s %s\n", k.ID, k.FirstName, k.SecondName)
+
+			}
 			posts := GetGroupPosts(g)
-			fmt.Printf("Posts (%d post)\n", len(posts))
+			fmt.Printf("Posts (%d post):\n", len(posts))
 			for _, k := range posts {
-				fmt.Printf("\t(%d) %s\n", k.ID, k.Content)
+				postUser := GetUser(strconv.Itoa(k.UserID))
+				fmt.Printf("\t(%d) - %s %s: %s\n", k.ID, postUser.FirstName, postUser.SecondName, k.Content)
 			}
 		} else if commands[0] == "get" && commands[1] == "user" && len(commands) == 3 {
 			//get user functionality

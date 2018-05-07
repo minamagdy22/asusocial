@@ -126,6 +126,12 @@ func GetGroupPosts(g Group) []Post {
 	db.Model(&g).Related(&posts, "Posts")
 	return posts
 }
+
+func GetGroupUsers(g Group) []User {
+	var users []User
+	db.Model(&g).Related(&users, "Users")
+	return users
+}
 func GetAllGroups() []Group {
 	var groups []Group
 	db.Find(&groups)
