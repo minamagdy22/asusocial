@@ -18,11 +18,13 @@ func jsonPrettyPrint(in string) string {
 }
 func Save() {
 	xmlrespond, _ := xml.Marshal(GetAllUsers())
-	err = ioutil.WriteFile("data.xml", []byte(xmlrespond), 0644)
+	err = ioutil.WriteFile("docs/data.xml", []byte(xmlrespond), 0644)
 	jsonresond, _ := json.Marshal(GetAllUsers())
-	err = ioutil.WriteFile("data.json", []byte(jsonPrettyPrint(string(jsonresond))), 0644)
+	err = ioutil.WriteFile("docs/data.json", []byte(jsonPrettyPrint(string(jsonresond))), 0644)
 	if err != nil {
 		log.Println(err)
+	} else {
+		log.Println("data.xml and data.json created at ~/docs directory")
 	}
 }
 

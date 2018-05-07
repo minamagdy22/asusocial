@@ -26,7 +26,7 @@ var (
 
 func init() {
 	// database connection
-	db, err = gorm.Open("sqlite3", "database.db")
+	db, err = gorm.Open("sqlite3", "docs/database.db")
 	db.LogMode(true)
 
 	if err != nil {
