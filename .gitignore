@@ -23,3 +23,7 @@ UpdateServer
 # golang out
 asusocial
 
+# docs internal
+docs/
+
+*.json

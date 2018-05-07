@@ -20,9 +20,12 @@ func jsonPrettyPrint(in string) string {
 	return out.String()
 }
 func Save() {
-	xmlrespond, _ := xml.Marshal(GetAllUsers())
+	users := GetAllUsers()
+	// get posts
+	
+	xmlrespond, _ := xml.Marshal(users)
 	err = ioutil.WriteFile("docs/data.xml", []byte(xmlrespond), 0644)
-	jsonresond, _ := json.Marshal(GetAllUsers())
+	jsonresond, _ := json.Marshal(users)
 	err = ioutil.WriteFile("docs/data.json", []byte(jsonPrettyPrint(string(jsonresond))), 0644)
 	if err != nil {
 		log.Println(err)
