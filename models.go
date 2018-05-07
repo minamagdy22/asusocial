@@ -13,6 +13,15 @@ type User struct {
 	Password   string `form:"password" json:"password"`
 	Email      string `form:"email" json:"email"`
 	Posts      []Post
+	Groups     []Group `gorm:"many2many:user_groups;"`
+	Friends    []Friend
+}
+
+// Friend struct
+type Friend struct {
+	ID       int
+	UserID   int
+	FriendID int
 }
 
 // Post struct
@@ -29,5 +38,6 @@ type Group struct {
 	CreatedAt time.Time
 	ID        int
 	AdminID   int
+	Name      string
 	Posts     []Post
 }

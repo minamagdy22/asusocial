@@ -45,7 +45,7 @@ func Logout() {
 }
 
 func Whoami() string {
-	return currentUser.FirstName + " " +  currentUser.SecondName
+	return currentUser.FirstName + " " + currentUser.SecondName
 }
 
 // AddNewUser function add new user to the database
@@ -55,7 +55,7 @@ func AddNewUser(u User) {
 
 func GetUser(id string) User {
 	var u User
-	db.Find(&u).Where("id = ?", id)
+	db.Where("id = ?", id).First(&u)
 	return u
 }
 
@@ -66,8 +66,27 @@ func GetAllUsers() []User {
 	return users
 }
 
-func AddFriend(u User) {
+func GetUserPosts(u User) []Post {
+	var posts []Post
+	db.Model(&u).Related(&posts)
+	return posts
+}
 
+func GetUserFriends(u User) []Friend {
+	var friends []Friend
+	db.Model(&u).Related(&friends)
+	return friends
+}
+func AddFriend(u User) {
+	var friend Friend
+	friend.UserID = currentUser.ID
+	friend.FriendID = u.ID
+	db.Create(&friend)
+	// add counter friendship
+	friend.ID = 0
+	friend.UserID = u.ID
+	friend.FriendID = currentUser.ID
+	db.Create(&friend)
 }
 
 func AddPost(p Post) {
@@ -75,11 +94,34 @@ func AddPost(p Post) {
 	db.Create(&p)
 }
 
-func AddNewGroup(g Group) {
-	g.AdminID = currentUser.ID
-	db.Create(&g)
+func GetPost(id string) Post {
+	var p Post
+	db.Where("id = ?", id).First(&p)
+	return p
 }
 
+func AddNewGroup(g Group) {
+	g.AdminID = currentUser.ID
+	u := currentUser
+	db.Model(&u).Association("Groups").Append(&g)
+}
+
+func JoinGroup(g Group) {
+	u := currentUser
+	db.Model(&u).Association("Groups").Append(&g)
+}
 func AddGroupPost(g Group, p Post) {
 
+}
+
+func GetAllGroups() []Group {
+	var groups []Group
+	db.Find(&groups)
+	return groups
+}
+
+func GetUserGroup(u User) []Group {
+	var groups []Group
+	db.Model(&u).Related(&groups, "Groups")
+	return groups
 }

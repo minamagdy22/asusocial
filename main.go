@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -33,7 +34,7 @@ func init() {
 	}
 	// `defer` for setting a time-closing fn.
 	// Migrate the schema
-	db.AutoMigrate(&User{}, &Post{}, &Group{})
+	db.AutoMigrate(&User{}, &Post{}, &Group{}, &Friend{})
 }
 func main() {
 	app := cli.NewApp()
@@ -115,15 +116,71 @@ func GoCli() {
 				Password:   commands[5],
 			}
 			AddNewUser(u)
+		} else if commands[0] == "get" && commands[1] == "groups" && len(commands) == 2 {
+			// get groups functionality
+			groups := GetAllGroups()
+			for _, k := range groups {
+				fmt.Printf("(%d) %s\n", k.ID, k.Name)
+			}
 		} else if commands[0] == "get" && commands[1] == "users" && len(commands) == 2 {
 			//get users functionality
 			users := GetAllUsers()
 			for _, k := range users {
-				fmt.Println(k.ID, k.FirstName, k.SecondName, k.Email, k.Password)
+				fmt.Printf("(%d) %s %s\n", k.ID, k.FirstName, k.SecondName)
+			}
+		} else if commands[0] == "get" && commands[1] == "post" && len(commands) == 3 {
+			//get post functionality
+			p := GetPost(commands[2])
+			u := GetUser(strconv.Itoa(p.UserID))
+
+			fmt.Println("Post: ", p.Content)
+			fmt.Printf("By: %s %s (%d)\n", u.FirstName, u.SecondName, p.UserID)
+			fmt.Println("Created at :", p.CreatedAt)
+		} else if commands[0] == "get" && commands[1] == "user" && len(commands) == 3 {
+			//get user functionality
+			u := GetUser(commands[2])
+			fmt.Println("Name:", u.FirstName+" "+u.SecondName)
+			fmt.Println("Email:", u.Email)
+			fmt.Println("Password:", u.Password)
+			fmt.Println("Created at:", u.CreatedAt)
+			posts := GetUserPosts(u)
+			fmt.Printf("Posts(%d post):\n", len(posts))
+			for _, k := range posts {
+				fmt.Printf("\t(%d) %s\n", k.ID, k.Content)
+			}
+
+			groups := GetUserGroup(u)
+			fmt.Printf("Groups(%d group):\n", len(groups))
+			for _, k := range groups {
+				admin := "Member"
+				if k.AdminID == u.ID {
+					admin = "Admin"
+				}
+				fmt.Printf("\t(%s)%d -%s\n", k.Name, k.ID, admin)
+			}
+			friends := GetUserFriends(u)
+			fmt.Printf("Friends(%d friend):\n", len(friends))
+			for _, k := range friends {
+				user := GetUser(strconv.Itoa(k.UserID))
+				fmt.Printf("\t(%d)%s %s\n", k.UserID, user.FirstName, user.SecondName)
 			}
 		} else if commands[0] == "add" && commands[1] == "friend" && len(commands) == 3 {
 			// add friend functionaliy
-
+			if !IsLogged() {
+				fmt.Println("Sorry man, you should login first before post")
+				continue
+			}
+			u := GetUser(commands[2])
+			AddFriend(u)
+		} else if commands[0] == "add" && commands[1] == "post" {
+			if !IsLogged() {
+				fmt.Println("Sorry man, you should login first before post")
+				continue
+			}
+			fmt.Println("Enter the post you want:")
+			scanner.Scan()
+			post := scanner.Text()
+			AddPost(Post{Content: post})
 		} else if commands[0] == "login" && len(commands) == 3 {
 			// login functionality
 			if ValidateLogin(commands[1], commands[2]) {
@@ -134,6 +191,21 @@ func GoCli() {
 				fmt.Println("wrong password")
 			}
 
+		} else if commands[0] == "join" && commands[1] == "group" && len(commands) == 3 {
+			if !IsLogged() {
+				fmt.Println("Sorry man, you should login first before joining a group")
+				continue
+			}
+			group_id, _ := strconv.Atoi(commands[2])
+			g := Group{ID: group_id}
+			JoinGroup(g)
+		} else if commands[0] == "add" && commands[1] == "group" && len(commands) == 3 {
+			if !IsLogged() {
+				fmt.Println("Sorry man, you should login first before creating a group")
+				continue
+			}
+			g := Group{Name: commands[2]}
+			AddNewGroup(g)
 		} else if commands[0] == "whoami" {
 			if Whoami() == " " {
 				fmt.Println("You aren't logged in yet")
@@ -151,6 +223,10 @@ func GoCli() {
 		} else if commands[0] == "clear" {
 			// clearscreen functionality
 			ClearScreen()
+		} else if commands[0] == "deactivate" {
+			db.LogMode(false)
+		} else if commands[0] == "activate" {
+			db.LogMode(true)
 		} else if commands[0] == "ls" {
 			// List function
 			var listCommands = []string{
@@ -163,6 +239,14 @@ func GoCli() {
 				"login <id> <password>",
 				"whoami",
 				"logout",
+				"add post ::optional <group_id>",
+				"add group <name>",
+				"join group <group_id>",
+				"get groups",
+				"get user <user_id>",
+				"activate",
+				"deactivate",
+				"get post <post_id>",
 			}
 			sort.Strings(listCommands)
 			for _, val := range listCommands {
