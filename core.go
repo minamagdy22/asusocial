@@ -98,6 +98,11 @@ func AddPost(p Post) {
 	db.Create(&p)
 }
 
+func GetPosts(u User) []Post {
+	var posts []Post
+	posts = append(posts, GetUserPosts(u)...)
+	return posts
+}
 func GetPost(id string) Post {
 	var p Post
 	db.Where("id = ?", id).First(&p)

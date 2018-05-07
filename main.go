@@ -119,6 +119,18 @@ func GoCli() {
 				Password:   commands[5],
 			}
 			AddNewUser(u)
+		} else if commands[0] == "get" && commands[1] == "friends" && len(commands) == 2 {
+			// get friends functionality
+			if !IsLogged() {
+				fmt.Println("Sorry man, you should login first before post")
+				continue
+			}
+			friends := GetUserFriends(currentUser)
+			fmt.Printf("Friends(%d friend):\n", len(friends))
+			for _, k := range friends {
+				user := GetUser(strconv.Itoa(k.UserID))
+				fmt.Printf("\t(%d)%s %s\n", k.UserID, user.FirstName, user.SecondName)
+			}
 		} else if commands[0] == "get" && commands[1] == "groups" && len(commands) == 2 {
 			// get groups functionality
 			groups := GetAllGroups()
@@ -130,6 +142,18 @@ func GoCli() {
 			users := GetAllUsers()
 			for _, k := range users {
 				fmt.Printf("(%d) %s %s\n", k.ID, k.FirstName, k.SecondName)
+			}
+		} else if (commands[0] == "get" && commands[1] == "posts") || commands[0] == "home" {
+			if !IsLogged() {
+				fmt.Println("Sorry man, yo should login first before getting posts/home")
+				continue
+			}
+
+			posts := GetPosts(currentUser)
+			fmt.Printf("Posts(%d):\n", len(posts))
+			for _, k := range posts {
+				postUser := GetUser(strconv.Itoa(k.UserID))
+				fmt.Printf("\t(%d) - %s %s: %s\n", k.ID, postUser.FirstName, postUser.SecondName, k.Content)
 			}
 		} else if commands[0] == "get" && commands[1] == "post" && len(commands) == 3 {
 			//get post functionality
@@ -178,7 +202,7 @@ func GoCli() {
 				if k.AdminID == u.ID {
 					admin = "Admin"
 				}
-				fmt.Printf("\t(%s)%d -%s\n", k.Name, k.ID, admin)
+				fmt.Printf("\t(%d)%s -%s\n", k.ID, k.Name, admin)
 			}
 			friends := GetUserFriends(u)
 			fmt.Printf("Friends(%d friend):\n", len(friends))
@@ -212,6 +236,10 @@ func GoCli() {
 			AddPost(p)
 		} else if commands[0] == "login" && len(commands) == 3 {
 			// login functionality
+			if IsLogged() {
+				fmt.Println("You're already logged in, logout first buddy!")
+				continue
+			}
 			if ValidateLogin(commands[1], commands[2]) {
 				fmt.Println("succesfully logged in")
 				u := GetUser(commands[1])
@@ -235,11 +263,36 @@ func GoCli() {
 			}
 			g := Group{Name: commands[2]}
 			AddNewGroup(g)
-		} else if commands[0] == "whoami" {
+		} else if commands[0] == "whoami" || commands[0] == "me" || commands[0] == "profile" {
 			if Whoami() == " " {
 				fmt.Println("You aren't logged in yet")
 			} else {
-				fmt.Println(Whoami())
+				u := currentUser
+				fmt.Println("Name:", u.FirstName+" "+u.SecondName)
+				fmt.Println("Email:", u.Email)
+				fmt.Println("Password:", u.Password)
+				fmt.Println("Created at:", u.CreatedAt)
+				posts := GetUserPosts(u)
+				fmt.Printf("Posts(%d post):\n", len(posts))
+				for _, k := range posts {
+					fmt.Printf("\t(%d) %s\n", k.ID, k.Content)
+				}
+
+				groups := GetUserGroup(u)
+				fmt.Printf("Groups(%d group):\n", len(groups))
+				for _, k := range groups {
+					admin := "Member"
+					if k.AdminID == u.ID {
+						admin = "Admin"
+					}
+					fmt.Printf("\t(%d)%s -%s\n", k.ID, k.Name, admin)
+				}
+				friends := GetUserFriends(u)
+				fmt.Printf("Friends(%d friend):\n", len(friends))
+				for _, k := range friends {
+					user := GetUser(strconv.Itoa(k.UserID))
+					fmt.Printf("\t(%d)%s %s\n", k.UserID, user.FirstName, user.SecondName)
+				}
 			}
 		} else if commands[0] == "logout" {
 			Logout()
@@ -277,13 +330,18 @@ func GoCli() {
 				"deactivate",
 				"get post <post_id>",
 				"get group <group_id>",
+				"get friends",
+				"me",
+				"friend",
+				"get posts",
+				"home",
 			}
 			sort.Strings(listCommands)
 			for _, val := range listCommands {
 				fmt.Println("$", val)
 			}
 		} else {
-			fmt.Println("Invalid")
+			fmt.Println("Invalid command")
 		}
 
 	}
