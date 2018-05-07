@@ -136,6 +136,18 @@ func GoCli() {
 			fmt.Println("Post: ", p.Content)
 			fmt.Printf("By: %s %s (%d)\n", u.FirstName, u.SecondName, p.UserID)
 			fmt.Println("Created at :", p.CreatedAt)
+		} else if commands[0] == "get" && commands[1] == "group" && len(commands) == 3 {
+			// get group functionality
+			g := GetGroup(commands[2])
+			fmt.Println("Name:", g.Name)
+			fmt.Println("Created at:", g.CreatedAt)
+			admin := GetUser(strconv.Itoa(g.AdminID))
+			fmt.Printf("Admin: (%d) %s %s", admin.ID, admin.FirstName, admin.SecondName)
+			posts := GetGroupPosts(g)
+			fmt.Printf("Posts (%d post)\n", len(posts))
+			for _, k := range posts {
+				fmt.Printf("\t(%d) %s\n", k.ID, k.Content)
+			}
 		} else if commands[0] == "get" && commands[1] == "user" && len(commands) == 3 {
 			//get user functionality
 			u := GetUser(commands[2])
@@ -173,14 +185,21 @@ func GoCli() {
 			u := GetUser(commands[2])
 			AddFriend(u)
 		} else if commands[0] == "add" && commands[1] == "post" {
+			// add post functionality
+			var p Post
+			if len(commands) == 3 {
+				i, _ := strconv.Atoi(commands[2])
+				p.GroupID = i
+			}
 			if !IsLogged() {
 				fmt.Println("Sorry man, you should login first before post")
 				continue
 			}
 			fmt.Println("Enter the post you want:")
 			scanner.Scan()
-			post := scanner.Text()
-			AddPost(Post{Content: post})
+			content := scanner.Text()
+			p.Content = content
+			AddPost(p)
 		} else if commands[0] == "login" && len(commands) == 3 {
 			// login functionality
 			if ValidateLogin(commands[1], commands[2]) {
@@ -247,6 +266,7 @@ func GoCli() {
 				"activate",
 				"deactivate",
 				"get post <post_id>",
+				"get group <group_id>",
 			}
 			sort.Strings(listCommands)
 			for _, val := range listCommands {

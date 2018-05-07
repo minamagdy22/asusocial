@@ -110,10 +110,18 @@ func JoinGroup(g Group) {
 	u := currentUser
 	db.Model(&u).Association("Groups").Append(&g)
 }
-func AddGroupPost(g Group, p Post) {
 
+func GetGroup(id string) Group {
+	var g Group
+	db.Where("id = ?", id).First(&g)
+	return g
 }
 
+func GetGroupPosts(g Group) []Post {
+	var posts []Post
+	db.Model(&g).Related(&posts, "Posts")
+	return posts
+}
 func GetAllGroups() []Group {
 	var groups []Group
 	db.Find(&groups)
