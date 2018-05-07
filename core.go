@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"sort"
+	"strconv"
 )
 
 func jsonPrettyPrint(in string) string {
@@ -100,7 +102,24 @@ func AddPost(p Post) {
 
 func GetPosts(u User) []Post {
 	var posts []Post
+	// friends posts
+	friends := GetUserFriends(u)
+	for _, k := range friends {
+		friend := GetUser(strconv.Itoa(k.UserID))
+		posts = append(posts, GetUserPosts(friend)...)
+	}
+	// Me posts
 	posts = append(posts, GetUserPosts(u)...)
+
+	// groups posts
+	groups := GetUserGroups(u)
+	for _, g := range groups {
+		groupPosts := GetGroupPosts(g)
+		posts = append(posts, groupPosts...)
+	}
+	sort.Slice(posts, func(i, j int) bool {
+		return posts[i].ID > posts[j].ID
+	})
 	return posts
 }
 func GetPost(id string) Post {
@@ -143,7 +162,7 @@ func GetAllGroups() []Group {
 	return groups
 }
 
-func GetUserGroup(u User) []Group {
+func GetUserGroups(u User) []Group {
 	var groups []Group
 	db.Model(&u).Related(&groups, "Groups")
 	return groups

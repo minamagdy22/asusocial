@@ -143,7 +143,8 @@ func GoCli() {
 			for _, k := range users {
 				fmt.Printf("(%d) %s %s\n", k.ID, k.FirstName, k.SecondName)
 			}
-		} else if (commands[0] == "get" && commands[1] == "posts") || commands[0] == "home" {
+		} else if (commands[0] == "get" && commands[1] == "posts") || commands[0] == "home" || commands[0] == "timeline" {
+			// get posts functionality
 			if !IsLogged() {
 				fmt.Println("Sorry man, yo should login first before getting posts/home")
 				continue
@@ -153,7 +154,14 @@ func GoCli() {
 			fmt.Printf("Posts(%d):\n", len(posts))
 			for _, k := range posts {
 				postUser := GetUser(strconv.Itoa(k.UserID))
-				fmt.Printf("\t(%d) - %s %s: %s\n", k.ID, postUser.FirstName, postUser.SecondName, k.Content)
+				fmt.Printf("\t(%d) %s\n", k.ID, k.Content)
+				fmt.Printf("\tBy :%s %s", postUser.FirstName, postUser.SecondName)
+				if k.GroupID >= 1 {
+					g := GetGroup(strconv.Itoa(k.GroupID))
+					fmt.Printf(" , Group: %s\n\n", g.Name)
+				} else {
+					fmt.Println("\n")
+				}
 			}
 		} else if commands[0] == "get" && commands[1] == "post" && len(commands) == 3 {
 			//get post functionality
@@ -185,17 +193,17 @@ func GoCli() {
 		} else if commands[0] == "get" && commands[1] == "user" && len(commands) == 3 {
 			//get user functionality
 			u := GetUser(commands[2])
-			fmt.Println("Name:", u.FirstName+" "+u.SecondName)
-			fmt.Println("Email:", u.Email)
-			fmt.Println("Password:", u.Password)
-			fmt.Println("Created at:", u.CreatedAt)
+			fmt.Println("Name:", u.FirstName+" "+u.SecondName, "\n")
+			fmt.Println("Email:", u.Email, "\n")
+			fmt.Println("Password:", u.Password, "\n")
+			fmt.Println("Created at:", u.CreatedAt, "\n")
 			posts := GetUserPosts(u)
 			fmt.Printf("Posts(%d post):\n", len(posts))
 			for _, k := range posts {
 				fmt.Printf("\t(%d) %s\n", k.ID, k.Content)
 			}
-
-			groups := GetUserGroup(u)
+			fmt.Println("")
+			groups := GetUserGroups(u)
 			fmt.Printf("Groups(%d group):\n", len(groups))
 			for _, k := range groups {
 				admin := "Member"
@@ -204,6 +212,7 @@ func GoCli() {
 				}
 				fmt.Printf("\t(%d)%s -%s\n", k.ID, k.Name, admin)
 			}
+			fmt.Println("")
 			friends := GetUserFriends(u)
 			fmt.Printf("Friends(%d friend):\n", len(friends))
 			for _, k := range friends {
@@ -278,7 +287,7 @@ func GoCli() {
 					fmt.Printf("\t(%d) %s\n", k.ID, k.Content)
 				}
 
-				groups := GetUserGroup(u)
+				groups := GetUserGroups(u)
 				fmt.Printf("Groups(%d group):\n", len(groups))
 				for _, k := range groups {
 					admin := "Member"
@@ -335,6 +344,7 @@ func GoCli() {
 				"friend",
 				"get posts",
 				"home",
+				"timeline",
 			}
 			sort.Strings(listCommands)
 			for _, val := range listCommands {
