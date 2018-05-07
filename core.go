@@ -36,12 +36,16 @@ func Login(u User) {
 	currentUser = u
 }
 
-func isLogged() bool {
+func IsLogged() bool {
 	return currentUser.FirstName != ""
 }
 
 func Logout() {
 	currentUser = User{}
+}
+
+func Whoami() string {
+	return currentUser.FirstName + " " +  currentUser.SecondName
 }
 
 // AddNewUser function add new user to the database

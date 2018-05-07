@@ -134,6 +134,12 @@ func GoCli() {
 				fmt.Println("wrong password")
 			}
 
+		} else if commands[0] == "whoami" {
+			if Whoami() == " " {
+				fmt.Println("You aren't logged in yet")
+			} else {
+				fmt.Println(Whoami())
+			}
 		} else if commands[0] == "logout" {
 			Logout()
 		} else if commands[0] == "save" {
