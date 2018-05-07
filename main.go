@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"log"
 	"net/http"
@@ -22,6 +23,8 @@ var (
 	db          *gorm.DB
 	err         error
 	currentUser User
+	buf         bytes.Buffer
+	logger      = log.New(&buf, "logger: ", log.Ltime)
 )
 
 func init() {

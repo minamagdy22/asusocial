@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"encoding/xml"
+	"fmt"
 	"io/ioutil"
 	"log"
 )
@@ -24,7 +25,8 @@ func Save() {
 	if err != nil {
 		log.Println(err)
 	} else {
-		log.Println("data.xml and data.json created at ~/docs directory")
+		logger.Println("data.xml and data.json created at ~/docs directory")
+		fmt.Print(&buf)
 	}
 }
 
