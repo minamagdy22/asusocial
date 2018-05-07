@@ -33,7 +33,7 @@ func Save() {
 // ValidateLogin used to validate data
 func ValidateLogin(id string, password string) bool {
 	var u User
-	db.Find(&u).Where("id = ?", id)
+	db.Where("id = ?", id).First(&u)
 	return u.Password == password
 }
 func Login(u User) {
